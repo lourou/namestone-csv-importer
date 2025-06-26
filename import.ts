@@ -9,7 +9,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 interface ProfileRow {
-  ethereumAddress: string;
+  address: string;
   username: string;
   profile_name: string;
   description: string;
@@ -43,7 +43,7 @@ async function readCSV(filePath: string): Promise<ProfileRow[]> {
   });
 }
 
-function convertToNamestoneProfile(row: ProfileRow): NamestoneProfile {
+function convertToNamestoneProfile(row: any): NamestoneProfile {
   const textRecords: NamestoneProfile['text_records'] = {};
   
   if (row.profile_name) textRecords['display.name'] = row.profile_name;
@@ -51,9 +51,20 @@ function convertToNamestoneProfile(row: ProfileRow): NamestoneProfile {
   if (row.avatar) textRecords.avatar = row.avatar;
   if (row.profile_created) textRecords.created = row.profile_created;
 
+  // Handle CSV files with BOM by finding the address field dynamically
+  let address = '';
+  const keys = Object.keys(row);
+  
+  for (const key of keys) {
+    if (key.toLowerCase().includes('address')) {
+      address = row[key];
+      break;
+    }
+  }
+
   return {
     name: row.username,
-    address: row.ethereumAddress,
+    address: address,
     text_records: textRecords
   };
 }
@@ -61,7 +72,8 @@ function convertToNamestoneProfile(row: ProfileRow): NamestoneProfile {
 async function batchImportProfiles(
   profiles: NamestoneProfile[], 
   domain: string, 
-  apiKey: string
+  apiKey: string,
+  dryRun: boolean = false
 ): Promise<void> {
   const batches = [];
   
@@ -74,29 +86,35 @@ async function batchImportProfiles(
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
     console.log(`Processing batch ${i + 1}/${batches.length} (${batch.length} profiles)...`);
-
-    try {
-      const response = await axios.post(NAMESTONE_API_URL, {
-        domain,
-        names: batch
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log(`✅ Batch ${i + 1} completed successfully`);
-      
-      if (response.data.errors && response.data.errors.length > 0) {
-        console.log('⚠️  Some errors occurred:');
-        response.data.errors.forEach((error: any) => {
-          console.log(`  - ${error.name}: ${error.message}`);
+    
+    // Debug: show what we're sending
+    if (dryRun) {
+      console.log(`🔍 DRY RUN: Batch ${i + 1} (${batch.length} profiles)`);
+      console.log('Sample data:', JSON.stringify(batch.slice(0, 1), null, 2));
+    } else {
+      try {
+        const response = await axios.post(NAMESTONE_API_URL, {
+          domain,
+          names: batch
+        }, {
+          headers: {
+            'Authorization': apiKey,
+            'Content-Type': 'application/json'
+          }
         });
+
+        console.log(`✅ Batch ${i + 1} completed successfully`);
+        
+        if (response.data.errors && response.data.errors.length > 0) {
+          console.log('⚠️  Some errors occurred:');
+          response.data.errors.forEach((error: any) => {
+            console.log(`  - ${error.name}: ${error.message}`);
+          });
+        }
+      } catch (error: any) {
+        console.error(`❌ Batch ${i + 1} failed:`, error.response?.data || error.message);
+        throw error;
       }
-    } catch (error: any) {
-      console.error(`❌ Batch ${i + 1} failed:`, error.response?.data || error.message);
-      throw error;
     }
 
     // Add delay between batches to avoid rate limiting
@@ -110,19 +128,28 @@ async function main() {
   const args = process.argv.slice(2);
   
   if (args.length < 1) {
-    console.error('Usage: yarn dev <csv-file>');
+    console.error('Usage: yarn dev <csv-file> [--dry-run]');
     console.error('Example: yarn dev profiles.csv');
+    console.error('Example (dry run): yarn dev profiles.csv --dry-run');
     console.error('Make sure to set NAMESTONE_DOMAIN and NAMESTONE_API_KEY in .env file');
     process.exit(1);
   }
 
-  const [csvFile] = args;
+  const csvFile = args[0];
+  const dryRun = args.includes('--dry-run');
   const domain = process.env.NAMESTONE_DOMAIN;
   const apiKey = process.env.NAMESTONE_API_KEY;
 
   if (!domain || !apiKey) {
     console.error('Error: NAMESTONE_DOMAIN and NAMESTONE_API_KEY must be set in .env file');
     process.exit(1);
+  }
+
+  console.log(`Using domain: ${domain}`);
+  console.log(`API key loaded: ${apiKey.substring(0, 8)}...`);
+  
+  if (dryRun) {
+    console.log('🔍 DRY RUN MODE - No actual API calls will be made');
   }
 
   if (!fs.existsSync(csvFile)) {
@@ -138,9 +165,13 @@ async function main() {
     
     const profiles = rows.map(convertToNamestoneProfile);
     
-    await batchImportProfiles(profiles, domain, apiKey);
+    await batchImportProfiles(profiles, domain, apiKey, dryRun);
     
-    console.log('🎉 Import completed successfully!');
+    if (dryRun) {
+      console.log('🔍 DRY RUN completed - no changes were made');
+    } else {
+      console.log('🎉 Import completed successfully!');
+    }
   } catch (error: any) {
     console.error('❌ Import failed:', error.message);
     process.exit(1);

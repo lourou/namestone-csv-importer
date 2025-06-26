@@ -66,7 +66,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.0.0":
+"@types/node@npm:^20.19.1":
   version: 20.19.1
   resolution: "@types/node@npm:20.19.1"
   dependencies:
@@ -164,6 +164,13 @@ __metadata:
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: 81b91f9d39c4eaca068eb0c1eb0e4afbdc5bb2941d197f513dd596b820b956fef43485876226d65d497bebc15666aa2aa82c679e84f65d5f2bfbf14ee46e32c1
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.3.0":
+  version: 16.5.0
+  resolution: "dotenv@npm:16.5.0"
+  checksum: 5bc94c919fbd955bf0ba44d33922a1e93d1078e64a1db5c30faeded1d996e7a83c55332cb8ea4fae5a9ca4d0be44cbceb95c5811e70f9f095298df09d1997dd9
   languageName: node
   linkType: hard
 
@@ -337,9 +344,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "namestone-csv-importer@workspace:."
   dependencies:
-    "@types/node": "npm:^20.0.0"
+    "@types/node": "npm:^20.19.1"
     axios: "npm:^1.6.0"
     csv-parser: "npm:^3.0.0"
+    dotenv: "npm:^16.3.0"
     ts-node: "npm:^10.9.0"
     typescript: "npm:^5.0.0"
   languageName: unknown

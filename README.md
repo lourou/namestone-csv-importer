@@ -24,17 +24,21 @@ NAMESTONE_API_KEY=your-api-key-here
 
 ### Development (with ts-node)
 ```bash
-yarn dev <csv-file>
+yarn dev <csv-file> [--dry-run]
 ```
 
 ### Production (compiled)
 ```bash
 yarn build
-yarn start <csv-file>
+yarn start <csv-file> [--dry-run]
 ```
 
-### Example
+### Examples
 ```bash
+# Dry run (preview what would be sent)
+yarn dev profiles.csv --dry-run
+
+# Actual import
 yarn dev profiles.csv
 ```
 
@@ -44,7 +48,7 @@ The CSV file should have the following columns:
 
 | Column | Required | Description |
 |--------|----------|-------------|
-| `ethereumAddress` | Yes | Ethereum address for the profile |
+| `address` | Yes | Ethereum address for the profile |
 | `username` | Yes | Username/subdomain for Namestone |
 | `profile_name` | No | Display name for the profile |
 | `description` | No | Profile description |
@@ -53,7 +57,7 @@ The CSV file should have the following columns:
 
 ### Example CSV:
 ```csv
-ethereumAddress,username,profile_name,description,avatar,profile_created
+address,username,profile_name,description,avatar,profile_created
 0x00,user98,User,A sample user profile,https://example.com/avatar.jpg,2025-06-26T04:46:22.353Z
 ```
 
