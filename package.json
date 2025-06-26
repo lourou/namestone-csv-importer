@@ -1,0 +1,21 @@
+{
+  "name": "namestone-csv-importer",
+  "version": "1.0.0",
+  "description": "Import profiles from CSV to Namestone using batch API",
+  "main": "dist/import.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/import.js",
+    "dev": "ts-node import.ts"
+  },
+  "packageManager": "yarn@1.22.0",
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  }
+}
