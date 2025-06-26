@@ -9,22 +9,33 @@ A TypeScript tool to batch import profiles from CSV files to Namestone using the
 yarn install
 ```
 
+2. Create environment file:
+```bash
+cp .env.example .env
+```
+
+3. Edit `.env` file with your Namestone configuration:
+```bash
+NAMESTONE_DOMAIN=mydomain.eth
+NAMESTONE_API_KEY=your-api-key-here
+```
+
 ## Usage
 
 ### Development (with ts-node)
 ```bash
-yarn dev <csv-file> <domain> <api-key>
+yarn dev <csv-file>
 ```
 
 ### Production (compiled)
 ```bash
 yarn build
-yarn start <csv-file> <domain> <api-key>
+yarn start <csv-file>
 ```
 
 ### Example
 ```bash
-yarn dev profiles.csv mydomain.eth your-namestone-api-key
+yarn dev profiles.csv
 ```
 
 ## CSV Format
@@ -57,9 +68,9 @@ ethereumAddress,username,profile_name,description,avatar,profile_created
   - `avatar` → `avatar`
   - `profile_created` → `created`
 
-## API Key
+## Configuration
 
-Get your Namestone API key from your dashboard and use it as the third argument.
+Get your Namestone API key from your dashboard and set it in the `.env` file along with your domain.
 
 ## Error Handling
 

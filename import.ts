@@ -4,6 +4,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import csv from 'csv-parser';
 import axios from 'axios';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 interface ProfileRow {
   ethereumAddress: string;
@@ -106,13 +109,21 @@ async function batchImportProfiles(
 async function main() {
   const args = process.argv.slice(2);
   
-  if (args.length < 3) {
-    console.error('Usage: yarn dev <csv-file> <domain> <api-key>');
-    console.error('Example: yarn dev profiles.csv mydomain.eth your-api-key');
+  if (args.length < 1) {
+    console.error('Usage: yarn dev <csv-file>');
+    console.error('Example: yarn dev profiles.csv');
+    console.error('Make sure to set NAMESTONE_DOMAIN and NAMESTONE_API_KEY in .env file');
     process.exit(1);
   }
 
-  const [csvFile, domain, apiKey] = args;
+  const [csvFile] = args;
+  const domain = process.env.NAMESTONE_DOMAIN;
+  const apiKey = process.env.NAMESTONE_API_KEY;
+
+  if (!domain || !apiKey) {
+    console.error('Error: NAMESTONE_DOMAIN and NAMESTONE_API_KEY must be set in .env file');
+    process.exit(1);
+  }
 
   if (!fs.existsSync(csvFile)) {
     console.error(`Error: CSV file '${csvFile}' not found`);
